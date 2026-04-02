@@ -7,11 +7,10 @@ phases:
       - pip install bandit
   build:
     commands:
-      - echo "Starting Bandit SAST scan..."
-      # -lll means level 3 (high)
-      # -f html outputs the web report
-      # -o creates the file
-      - bandit -r . -lll -f html -o bandit-report.html
+      - echo "Running STRICT Security Scan (Low/Med/High)..."
+      # -l (one L) tells Bandit to report ALL severity levels
+      # -f screen prints the results to your AWS logs so you can show the faculty
+      - bandit -r . -l
 artifacts:
   files:
-    - bandit-report.html
+    - "**/*"

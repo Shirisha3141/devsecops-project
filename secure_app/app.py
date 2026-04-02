@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # 1. TO GET A "RED" ERROR (FAILED BUILD): 
 #    Remove the '#' so the line below is active.
-ADMIN_PASSWORD = "AKIA5S6D7F8G9H0J1K2L_SECRET_KEY_EXPOSED_123456789"
+ADMIN_PASSWORD = "Sreenidhi_Test_Pass_123"
 
 # 2. TO GET A "GREEN" SUCCESS (PASSED BUILD): 
 #    Add a '#' to the start of the line above.
@@ -23,3 +23,4 @@ def home():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
+    # Triggering Pipeline for Faculty Demo.
