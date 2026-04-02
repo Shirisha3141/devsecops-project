@@ -4,7 +4,7 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 # This is a "High Severity" pattern that Bandit cannot ignore
-ADMIN_PASSWORD = "AKIA5S6D7F8G9H0J1K2L_SECRET_KEY_EXPOSED_123456789" 
+# ADMIN_PASSWORD = "AKIA5S6D7F8G9H0J1K2L_SECRET_KEY_EXPOSED_123456789" 
 
 @app.route('/')
 def home():
