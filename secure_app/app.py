@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # 1. TO GET A "RED" ERROR (FAILED BUILD): 
 #    Remove the '#' so the line below is active.
-# ADMIN_PASSWORD = "Sreenidhi_Test_Pass_123"
+ADMIN_PASSWORD = "Sreenidhi_Test_Pass_123"
 
 # 2. TO GET A "GREEN" SUCCESS (PASSED BUILD): 
 #    Add a '#' to the start of the line above.

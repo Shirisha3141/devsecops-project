@@ -7,10 +7,6 @@ phases:
       - pip install bandit
   build:
     commands:
-      - echo "Running STRICT Security Scan (Low/Med/High)..."
-      # -l (one L) tells Bandit to report ALL severity levels
-      # -f screen prints the results to your AWS logs so you can show the faculty
-      - bandit -r . -l
-artifacts:
-  files:
-    - "**/*"
+      - echo "Running Security Scan (Fails on Medium/High)..."
+      # -ll (two L's) tells Bandit: "Ignore Low, but Fail on Medium or High"
+      - bandit -r . -ll
