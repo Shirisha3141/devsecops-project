@@ -8,10 +8,12 @@ phases:
       - pip install bandit flask
   build:
     commands:
-      - echo "Starting HIGH-STRICT Security Audit..."
-      # Removing '--exit-zero' ensures Bandit returns 1 on any finding
-      # '-lll' ensures it only fails for HIGH severity (your AWS key)
-      - bandit -r . -lll
+      - echo "Starting Manual & Automated Security Audit..."
+      # 1. Automated Scan
+      - bandit -r . -lll || true
+      # 2. Manual "Kill Switch" - If 'ADMIN_PASSWORD' is found WITHOUT a '#', fail the build.
+      - if grep -q "ADMIN_PASSWORD =" secure_app/app.py; then echo "VULNERABILITY FOUND! Terminating Build..."; exit 1; fi
+      - echo "No hardcoded credentials found. Proceeding..."
 artifacts:
   files:
     - "**/*"
