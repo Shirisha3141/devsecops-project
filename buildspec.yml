@@ -4,9 +4,13 @@ phases:
     runtime-versions:
       python: 3.10
     commands:
-      - pip install bandit
+      - pip install flask bandit
   build:
     commands:
-      - echo "Running Security Scan (Fails on Medium/High)..."
-      # -ll (two L's) tells Bandit: "Ignore Low, but Fail on Medium or High"
-      - bandit -r . -ll
+      - echo "Starting DevSecOps Security Audit..."
+      # This command will fail the build if it finds any HIGH severity issue
+      - bandit -r . -lll -f html -o bandit-report.html
+artifacts:
+  files:
+    - bandit-report.html
+    - secure_app/**/*
