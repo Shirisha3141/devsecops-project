@@ -27,7 +27,7 @@ jobs:
     - name: 4. SAST Scan (Bandit)
       run: |
         pip install bandit
-        bandit -r . -lll -f txt -o bandit-report.txt || true 
+        bandit -r . -lll -f txt -o bandit-report.txt
 
     - name: 5. IaC Scan (Checkov)
       run: |
