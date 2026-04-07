@@ -2,77 +2,80 @@ name: DevSecOps CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ] 
+    branches: [ "main" ]
 
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 1. Checkout Code
-      uses: actions/checkout@v4
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
 
-    - name: 2. Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - name: 2. Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: 3. Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: 3. Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    - name: 4. Check for Hardcoded Admin Password
-      run: |
-        if grep -q -E "^\s*ADMIN_PASSWORD\s*=" secure_app/app.py; then
-          echo "VULNERABILITY FOUND! Hardcoded admin password detected."
-          exit 1
-        else
-          echo "No active hardcoded admin password found."
-        fi
+      - name: 4. Check for Hardcoded Admin Password
+        run: |
+          if grep -q -E "^\s*ADMIN_PASSWORD\s*=" secure_app/app.py; then
+            echo "VULNERABILITY FOUND! Terminating Build..."
+            exit 1
+          else
+            echo "No active hardcoded credentials found. System Secure."
+          fi
 
-    - name: 5. IaC Scan (Checkov)
-      run: |
-        pip install checkov
-        checkov -d terraform/ --soft-fail > checkov-report.txt 
+      - name: 5. SAST Scan (Bandit)
+        run: |
+          pip install bandit
+          bandit -r . -lll -f txt -o bandit-report.txt
 
-    - name: 6. Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: 6. IaC Scan (Checkov)
+        run: |
+          pip install checkov
+          checkov -d terraform/ > checkov-report.txt
 
-    - name: 7. Build Docker Image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: django-security-app
-        IMAGE_TAG: latest
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      - name: 7. Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: 8. Container Scan (Trivy)
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: '${{ steps.login-ecr.outputs.registry }}/django-security-app:latest'
-        format: 'table'
-        exit-code: '0' 
-        ignore-unfixed: true
-        vuln-type: 'os,library'
-        severity: 'CRITICAL,HIGH'
-        output: 'trivy-report.txt'
+      - name: 8. Build Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: django-security-app
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
 
-    - name: 9. Push Image to AWS ECR
-      if: success() 
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: django-security-app
-        IMAGE_TAG: latest
-      run: |
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: 9. Container Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/django-security-app:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          output: 'trivy-report.txt'
 
-    - name: 10. Upload Security Reports to AWS S3
-      if: always() 
-      run: |
-        aws s3 cp bandit-report.txt s3://shirisha-devsecops-report/
-        aws s3 cp checkov-report.txt s3://shirisha-devsecops-report/
-        aws s3 cp trivy-report.txt s3://shirisha-devsecops-report/ 
+      - name: 10. Push Image to AWS ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: django-security-app
+          IMAGE_TAG: latest
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: 11. Upload Security Reports to AWS S3
+        run: |
+          aws s3 cp bandit-report.txt s3://shirisha-devsecops-report/
+          aws s3 cp checkov-report.txt s3://shirisha-devsecops-report/
+          aws s3 cp trivy-report.txt s3://shirisha-devsecops-report/
