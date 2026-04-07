@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # STEP 1: To show "VULNERABLE" (RED BUILD), remove the '#' below:
 #ADMIN_PASSWORD = "AKIA_FAKE_AWS_KEY_EXPOSED_12345"
-# ADMIN_PASSWORD="admin123"
+ADMIN_PASSWORD="admin123"
   
 # STEP 2: To show "SAFE" (GREEN BUILD), cd put the '#' back at the start.
 
