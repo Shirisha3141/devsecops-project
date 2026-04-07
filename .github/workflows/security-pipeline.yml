@@ -32,7 +32,7 @@ jobs:
     - name: 5. IaC Scan (Checkov)
       run: |
         pip install checkov
-        checkov -d terraform/ --soft-fail > checkov-report.txt || true
+        checkov -d terraform/ --soft-fail > checkov-report.txt 
 
     - name: 6. Login to Amazon ECR
       id: login-ecr
@@ -71,4 +71,4 @@ jobs:
       run: |
         aws s3 cp bandit-report.txt s3://shirisha-devsecops-report/
         aws s3 cp checkov-report.txt s3://shirisha-devsecops-report/
-        aws s3 cp trivy-report.txt s3://shirisha-devsecops-report/ || true
+        aws s3 cp trivy-report.txt s3://shirisha-devsecops-report/ 
