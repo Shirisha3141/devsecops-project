@@ -5,12 +5,12 @@ phases:
     runtime-versions:
       python: 3.10
     commands:
-      - pip install --upgrade pip
       - pip install bandit flask
-
   build:
     commands:
       - echo "Starting Advanced Security Policy Audit..."
+      # This 'grep' only looks for lines that START with ADMIN_PASSWORD
+      # It will IGNORE lines that start with '#'
       - |
         if grep -q -E "^\s*ADMIN_PASSWORD\s*=" secure_app/app.py; then
           echo "VULNERABILITY FOUND! Terminating Build..."
@@ -18,8 +18,7 @@ phases:
         else
           echo "No active hardcoded credentials found. System Secure."
         fi
-      - bandit -r . -lll -f txt -o bandit-report.txt || true
-
+      - bandit -r . -lll
 artifacts:
   files:
     - "**/*"
